@@ -1,6 +1,14 @@
 import type { ToolSet, UIMessageStreamWriter } from "ai";
 
 import { tool } from "ai";
+import {
+  generateCodeExport,
+  generateDesignSpec,
+  GenerateCodeExportInputSchema,
+  GenerateDesignSpecInputSchema,
+  iterateDesignSpec,
+  IterateDesignSpecInputSchema,
+} from "@repo/elements/website-designer";
 import { initAdvancedSearch } from "fumadocs-core/search/server";
 import z from "zod";
 
@@ -203,9 +211,38 @@ const list_docs = tool({
   },
 });
 
+const generate_design_spec = tool({
+  description:
+    "Generate a full website design specification from a natural language prompt.",
+  execute: async ({ prompt }) => generateDesignSpec({ prompt }),
+  inputSchema: GenerateDesignSpecInputSchema,
+});
+
+const iterate_design_spec = tool({
+  description:
+    "Apply a targeted update to an existing website design specification.",
+  execute: async ({ currentSpec, prompt, targetSectionId }) =>
+    iterateDesignSpec({
+      currentSpec,
+      prompt,
+      targetSectionId,
+    }),
+  inputSchema: IterateDesignSpecInputSchema,
+});
+
+const generate_code_export = tool({
+  description:
+    "Export a React/Tailwind style code snippet for the provided website design spec.",
+  execute: async ({ spec }) => generateCodeExport({ spec }),
+  inputSchema: GenerateCodeExportInputSchema,
+});
+
 export const createTools = (writer: UIMessageStreamWriter) =>
   ({
+    generate_code_export,
+    generate_design_spec,
     get_doc_page,
+    iterate_design_spec,
     list_docs,
     search_docs: search_docs(writer),
   }) satisfies ToolSet;
